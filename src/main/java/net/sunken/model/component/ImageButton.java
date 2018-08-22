@@ -19,7 +19,6 @@ public class ImageButton extends JLabel {
         java.net.URL imgURL = getClass().getResource("/" + path);
         if (imgURL != null) {
             ImageIcon icon = new ImageIcon(imgURL);
-            System.out.println(icon.getImageLoadStatus());
             return icon;
         } else {
             System.err.println("Couldn't find file: " + path);

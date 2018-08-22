@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ScrollingTextArea extends JPanel {
 
@@ -48,6 +50,29 @@ public class ScrollingTextArea extends JPanel {
 
         add(buttons, BorderLayout.SOUTH);
 
+    }
+
+    public List<String> getTextList() {
+        List<String> lines = new ArrayList<>();
+
+        for (int i = 0; i < this.getTextAreaAmount(); i++){
+            lines.add(this.getText(i));
+        }
+
+        return lines;
+    }
+
+    public int getTextAreaAmount() {
+        return scrollPanel.getComponentCount();
+    }
+
+    public String getText(int index) {
+        if (scrollPanel.getComponents().length >= (index + 1)) {
+            JTextArea area = (JTextArea) scrollPanel.getComponent(index);
+            return area.getText();
+        }
+
+        return null;
     }
 
 }

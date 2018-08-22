@@ -1,15 +1,21 @@
 package net.sunken.model;
 
+import com.google.gson.Gson;
+import lombok.Getter;
 import net.sunken.model.component.ImageButton;
 import net.sunken.model.component.ScrollingTextArea;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
+import java.util.ArrayList;
 import javax.swing.*;
 
 public class Helper extends JFrame {
+
+    @Getter
+    private static Gson GSON = new Gson();
 
     private JPanel container;
 
@@ -61,6 +67,8 @@ public class Helper extends JFrame {
 
             @Override
             public void mouseClicked(MouseEvent e) {
+                List<String> commands = ((ScrollingTextArea) container.getComponent(1)).getTextList();
+                Generator generator = new Generator(commands);
             }
 
         }, SwingConstants.CENTER), BorderLayout.SOUTH);
