@@ -54,6 +54,9 @@ public class Item {
                     && jsonObj.get("Small").getAsInt() == 1) {
                 size = ItemSize.MEDIUM;
             }
+            if (args[1].equalsIgnoreCase("villager")) {
+                size = ItemSize.SMALL;
+            }
 
             visible = true;
             if (jsonObj.has("Invisible")
