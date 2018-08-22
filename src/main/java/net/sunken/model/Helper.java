@@ -67,8 +67,16 @@ public class Helper extends JFrame {
 
             @Override
             public void mouseClicked(MouseEvent e) {
+                String name = ((JTextField)((JPanel) container.getComponent(0)).getComponent(1)).getText();
+                String description = ((JTextArea)((JPanel) container.getComponent(0)).getComponent(3)).getText();
+
                 List<String> commands = ((ScrollingTextArea) container.getComponent(1)).getTextList();
-                Generator generator = new Generator(commands);
+
+                if (name != null && commands.size() > 0) {
+                    Generator generator = new Generator(name, description, commands);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Must input at least 1 command and a name!");
+                }
             }
 
         }, SwingConstants.CENTER), BorderLayout.SOUTH);
