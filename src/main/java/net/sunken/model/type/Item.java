@@ -4,14 +4,14 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.ToString;
+import net.sunken.model.Constants;
 import net.sunken.model.Helper;
 import net.sunken.model.exception.ItemParseException;
 import org.simpleyaml.configuration.file.YamlFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.UUID;
+import java.util.*;
 
 @ToString
 public class Item {
@@ -27,11 +27,10 @@ public class Item {
     private boolean visible;
 
     @Getter
-    private double x;
+    private Location location;
+
     @Getter
-    private double y;
-    @Getter
-    private double z;
+    private Map<String, Location> pose;
 
     public Item(String command) throws ItemParseException {
         String[] args = command.split(" ");
@@ -43,9 +42,7 @@ public class Item {
                 throw new ItemParseException("Absolute coordinates must be enabled before creating the model!");
             }
 
-            x = Double.parseDouble(args[2]);
-            y = Double.parseDouble(args[3]);
-            z = Double.parseDouble(args[4]);
+            location = new Location(Double.parseDouble(args[2]), Double.parseDouble(args[3]), Double.parseDouble(args[4]));
 
             JsonObject jsonObj = Helper.getGSON().fromJson(args[5], JsonObject.class);
 
@@ -64,10 +61,26 @@ public class Item {
                 visible = false;
             }
 
-            JsonArray armor = jsonObj.get("ArmorItems").getAsJsonArray();
+            this.pose = new HashMap<>();
+            if (args[1].equalsIgnoreCase("armor_stand") && jsonObj.has("Pose")) {
+                JsonObject poses = jsonObj.get("Pose").getAsJsonObject();
 
-            JsonObject head = armor.get(armor.size() - 1).getAsJsonObject();
-            material = head.get("id").getAsString();
+                for (String pose : Constants.POSES) {
+                    if (poses.has(pose)) {
+                        JsonArray arr = poses.get(pose).getAsJsonArray();
+
+                        this.pose.put(pose, new Location(arr.get(0).getAsFloat(),
+                                arr.get(1).getAsFloat(), arr.get(2).getAsFloat()));
+                    }
+                }
+            }
+
+            material = "AIR";
+            if (jsonObj.has("ArmorItems")) {
+                JsonArray armor = jsonObj.get("ArmorItems").getAsJsonArray();
+                JsonObject head = armor.get(armor.size() - 1).getAsJsonObject();
+                material = head.get("id").getAsString();
+            }
 
             status = 2;
         } else {
@@ -86,9 +99,19 @@ public class Item {
             structFile.set("size", this.size.toString());
             structFile.set("visible", this.visible);
 
-            structFile.set("location.x", this.x);
-            structFile.set("location.y", this.y);
-            structFile.set("location.z", this.z);
+            structFile.set("location.x", this.location.getX());
+            structFile.set("location.y", this.location.getY());
+            structFile.set("location.z", this.location.getZ());
+
+            if (this.pose.size() > 0) {
+                for (String key : this.pose.keySet()) {
+                    Location loc = this.pose.get(key);
+
+                    structFile.set("pose." + key + ".x", loc.getX());
+                    structFile.set("pose." + key + ".y", loc.getY());
+                    structFile.set("pose." + key + ".z", loc.getZ());
+                }
+            }
 
             structFile.save();
         } catch (IOException e) {
