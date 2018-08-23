@@ -2,6 +2,7 @@ package net.sunken.model;
 
 import com.google.gson.Gson;
 import lombok.Getter;
+import net.sunken.model.component.BigTextArea;
 import net.sunken.model.component.ImageButton;
 import net.sunken.model.component.ScrollingTextArea;
 
@@ -31,7 +32,7 @@ public class Helper extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         container.add(this.getMainComponent());
-        container.add(new ScrollingTextArea("Commands"), BorderLayout.WEST);
+        container.add(new BigTextArea("Commands", 180, 235), BorderLayout.WEST);
 
         add(container);
         pack();
@@ -70,9 +71,9 @@ public class Helper extends JFrame {
                 String name = ((JTextField)((JPanel) container.getComponent(0)).getComponent(1)).getText();
                 String description = ((JTextArea)((JPanel) container.getComponent(0)).getComponent(3)).getText();
 
-                List<String> commands = ((ScrollingTextArea) container.getComponent(1)).getTextList();
+                String commands = ((BigTextArea) container.getComponent(1)).getText();
 
-                if (name != null && commands.size() > 0) {
+                if (name != null && name.length() > 0 && commands.length() > 0) {
                     Generator generator = new Generator(name, description, commands);
                 } else {
                     JOptionPane.showMessageDialog(null, "Must input at least 1 command and a name!");
