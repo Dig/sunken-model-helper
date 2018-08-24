@@ -29,17 +29,20 @@ public class Item {
 
     @Getter
     private Location location;
+    @Getter
+    private Rotation rotation;
 
     @Getter
     private Map<String, Location> pose;
 
     public Item(String uuid, String material, ItemSize size, boolean visible,
-                Location location, Map<String, Location> pose) {
+                Location location, Rotation rotation, Map<String, Location> pose) {
         this.uuid = uuid;
         this.material = material;
         this.size = size;
         this.visible = visible;
         this.location = location;
+        this.rotation = rotation;
         this.pose = pose;
 
         this.status = 2;
@@ -70,6 +73,12 @@ public class Item {
         if (nbt.has("Invisible")
                 && nbt.get("Invisible").getAsInt() == 1) {
             visible = false;
+        }
+
+        rotation = new Rotation(0, 0);
+        if (nbt.has("Rotation")) {
+            JsonArray array = nbt.getAsJsonArray("Rotation");
+            rotation = new Rotation(array.get(0).getAsFloat(), array.get(1).getAsFloat());
         }
 
         this.pose = new HashMap<>();
@@ -111,6 +120,9 @@ public class Item {
             structFile.set("location.y", this.location.getY());
             structFile.set("location.z", this.location.getZ());
 
+            structFile.set("rotation.x", this.rotation.getX());
+            structFile.set("rotation.y", this.rotation.getY());
+
             if (this.pose.size() > 0) {
                 for (String key : this.pose.keySet()) {
                     Location loc = this.pose.get(key);
@@ -142,6 +154,7 @@ public class Item {
                 && com.google.common.base.Objects.equal(this.size, other.getSize())
                 && com.google.common.base.Objects.equal(this.visible, other.isVisible())
                 && this.location.equals(other.getLocation())
-                && com.google.common.base.Objects.equal(this.pose, other.getPose());
+                && com.google.common.base.Objects.equal(this.pose, other.getPose())
+                && this.rotation.equals(other.getRotation());
     }
 }

@@ -6,6 +6,7 @@ import net.sunken.model.exception.ItemParseException;
 import net.sunken.model.type.Item;
 import net.sunken.model.type.ItemSize;
 import net.sunken.model.type.Location;
+import net.sunken.model.type.Rotation;
 import org.simpleyaml.configuration.ConfigurationSection;
 import org.simpleyaml.configuration.file.YamlFile;
 import org.yaml.snakeyaml.Yaml;
@@ -202,6 +203,12 @@ public class Generator {
         Location location = new Location(structFile.getDouble("location.x"),
                 structFile.getDouble("location.y"), structFile.getDouble("location.z"));
 
+        Rotation rotation = new Rotation(0, 0);
+        if (structFile.contains("rotation")) {
+            rotation = new Rotation(Double.valueOf(structFile.getDouble("rotation.x")).floatValue(),
+                    Double.valueOf(structFile.getDouble("rotation.y")).floatValue());
+        }
+
         Map<String, Location> pose = new HashMap<>();
         if (structFile.contains("pose")) {
             ConfigurationSection poses = structFile.getConfigurationSection("pose");
@@ -216,7 +223,7 @@ public class Generator {
         }
 
         return new Item(file.getName().replaceAll(".yml", ""),
-                material, size, visible, location, pose);
+                material, size, visible, location, rotation, pose);
     }
 
 }
