@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.ToString;
 import net.sunken.model.Constants;
-import net.sunken.model.Helper;
 import net.sunken.model.exception.ItemParseException;
 import org.simpleyaml.configuration.file.YamlFile;
 
@@ -20,6 +19,8 @@ public class Item {
     private int status;
 
     @Getter
+    private String uuid;
+    @Getter
     private String material;
     @Getter
     private ItemSize size;
@@ -32,64 +33,71 @@ public class Item {
     @Getter
     private Map<String, Location> pose;
 
-    public Item(String command) throws ItemParseException {
-        String[] args = command.split(" ");
+    public Item(String uuid, String material, ItemSize size, boolean visible,
+                Location location, Map<String, Location> pose) {
+        this.uuid = uuid;
+        this.material = material;
+        this.size = size;
+        this.visible = visible;
+        this.location = location;
+        this.pose = pose;
+
+        this.status = 2;
+    }
+
+    public Item(JsonObject jsonObj) throws ItemParseException {
+        JsonObject nbt = jsonObj.get("nbt").getAsJsonObject();
         status = 0;
 
-        if (args.length == 6) {
-            if (args[2].contains("~") || args[3].contains("~") || args[4].contains("~")) {
-                status = 1;
-                throw new ItemParseException("Absolute coordinates must be enabled before creating the model!");
-            }
+        location = new Location(jsonObj.get("x").getAsDouble(),
+                jsonObj.get("y").getAsDouble(),
+                jsonObj.get("z").getAsDouble());
 
-            location = new Location(Double.parseDouble(args[2]), Double.parseDouble(args[3]), Double.parseDouble(args[4]));
+        uuid = jsonObj.get("uuid").getAsString();
 
-            JsonObject jsonObj = Helper.getGSON().fromJson(args[5], JsonObject.class);
+        size = ItemSize.LARGE;
+        if (nbt.has("Small")
+                && nbt.get("Small").getAsInt() == 1) {
+            size = ItemSize.MEDIUM;
+        }
 
-            size = ItemSize.LARGE;
-            if (jsonObj.has("Small")
-                    && jsonObj.get("Small").getAsInt() == 1) {
-                size = ItemSize.MEDIUM;
-            }
-            if (args[1].equalsIgnoreCase("villager")) {
-                size = ItemSize.SMALL;
-            }
+        String entity = jsonObj.get("entity").getAsString();
+        if (entity.equalsIgnoreCase("villager")) {
+            size = ItemSize.SMALL;
+        }
 
-            visible = true;
-            if (jsonObj.has("Invisible")
-                    && jsonObj.get("Invisible").getAsInt() == 1) {
-                visible = false;
-            }
+        visible = true;
+        if (nbt.has("Invisible")
+                && nbt.get("Invisible").getAsInt() == 1) {
+            visible = false;
+        }
 
-            this.pose = new HashMap<>();
-            if (args[1].equalsIgnoreCase("armor_stand") && jsonObj.has("Pose")) {
-                JsonObject poses = jsonObj.get("Pose").getAsJsonObject();
+        this.pose = new HashMap<>();
+        if (entity.equalsIgnoreCase("armor_stand") && nbt.has("Pose")) {
+            JsonObject poses = nbt.get("Pose").getAsJsonObject();
 
-                for (String pose : Constants.POSES) {
-                    if (poses.has(pose)) {
-                        JsonArray arr = poses.get(pose).getAsJsonArray();
+            for (String pose : Constants.POSES) {
+                if (poses.has(pose)) {
+                    JsonArray arr = poses.get(pose).getAsJsonArray();
 
-                        this.pose.put(pose, new Location(arr.get(0).getAsFloat(),
-                                arr.get(1).getAsFloat(), arr.get(2).getAsFloat()));
-                    }
+                    this.pose.put(pose, new Location(arr.get(0).getAsFloat(),
+                            arr.get(1).getAsFloat(), arr.get(2).getAsFloat()));
                 }
             }
-
-            material = "AIR";
-            if (jsonObj.has("ArmorItems")) {
-                JsonArray armor = jsonObj.get("ArmorItems").getAsJsonArray();
-                JsonObject head = armor.get(armor.size() - 1).getAsJsonObject();
-                material = head.get("id").getAsString();
-            }
-
-            status = 2;
-        } else {
-            status = 1;
         }
+
+        material = "AIR";
+        if (nbt.has("ArmorItems")) {
+            JsonArray armor = nbt.get("ArmorItems").getAsJsonArray();
+            JsonObject head = armor.get(armor.size() - 1).getAsJsonObject();
+            material = head.get("id").getAsString();
+        }
+
+        status = 2;
     }
 
     public boolean saveFile(String path) {
-        String fileName = UUID.randomUUID().toString() + ".yml";
+        String fileName = this.uuid + ".yml";
         YamlFile structFile = new YamlFile(path + File.separator + fileName);
 
         try {
@@ -120,5 +128,20 @@ public class Item {
         }
 
         return true;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (obj == this) return true;
+        if (obj.getClass() != getClass()) return false;
+        Item other = (Item) obj;
+
+        return com.google.common.base.Objects.equal(this.uuid, other.getUuid())
+                && com.google.common.base.Objects.equal(this.material, other.getMaterial())
+                && com.google.common.base.Objects.equal(this.size, other.getSize())
+                && com.google.common.base.Objects.equal(this.visible, other.isVisible())
+                && this.location.equals(other.getLocation())
+                && com.google.common.base.Objects.equal(this.pose, other.getPose());
     }
 }
