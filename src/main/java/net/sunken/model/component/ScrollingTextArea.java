@@ -10,6 +10,7 @@ import java.util.List;
 public class ScrollingTextArea extends JPanel {
 
     private JPanel scrollPanel;
+    private JScrollPane scrollPane;
 
     public ScrollingTextArea(String title){
         setLayout(new BorderLayout());
@@ -18,8 +19,10 @@ public class ScrollingTextArea extends JPanel {
         scrollPanel = new JPanel();
         scrollPanel.setLayout(new GridLayout(0, 1, 3, 3));
 
+        scrollPane = new JScrollPane(scrollPanel);
+
         add(new JLabel(title, SwingConstants.HORIZONTAL), BorderLayout.NORTH);
-        add(new JScrollPane(scrollPanel), BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
 
         JPanel buttons = new JPanel();
         buttons.add(new ImageButton("plus.png", new MouseAdapter() {
@@ -32,6 +35,9 @@ public class ScrollingTextArea extends JPanel {
 
                 scrollPanel.add(area);
                 scrollPanel.revalidate();
+
+                // Scroll to bottom
+                scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
             }
 
         }, SwingConstants.RIGHT));
