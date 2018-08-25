@@ -58,16 +58,8 @@ public class Item {
 
         uuid = jsonObj.get("uuid").getAsString();
 
-        size = ItemSize.LARGE;
-        if (nbt.has("Small")
-                && nbt.get("Small").getAsInt() == 1) {
-            size = ItemSize.MEDIUM;
-        }
-
         String entity = jsonObj.get("entity").getAsString();
-        if (entity.equalsIgnoreCase("villager")) {
-            size = ItemSize.SMALL;
-        }
+        size = ItemSize.valueOf(jsonObj.get("size").getAsString().toUpperCase());
 
         visible = true;
         if (nbt.has("Invisible")
@@ -99,7 +91,11 @@ public class Item {
         if (nbt.has("ArmorItems")) {
             JsonArray armor = nbt.get("ArmorItems").getAsJsonArray();
             JsonObject head = armor.get(armor.size() - 1).getAsJsonObject();
+
             material = head.get("id").getAsString();
+            if (head.has("Damage")) {
+                material = material + ":" + head.get("Damage").getAsInt();
+            }
         }
 
         status = 2;

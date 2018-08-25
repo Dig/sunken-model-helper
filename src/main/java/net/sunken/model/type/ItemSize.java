@@ -4,6 +4,7 @@ public enum ItemSize {
 
     SMALL,
     MEDIUM,
-    LARGE
+    LARGE,
+    SOLID
 
 }
